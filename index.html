@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - CBT SMANJO v2</title>
+    <title>Admin Panel - CBT SMANJO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -30,8 +30,7 @@
     <!-- SIDEBAR -->
     <aside class="w-64 bg-white shadow-xl hidden md:flex flex-col">
         <div class="p-6 border-b text-center">
-            <!-- TANDA V2 UNTUK MEMASTIKAN GITHUB SUDAH UPDATE -->
-            <h1 class="text-xl font-bold text-blue-600"><i class="fas fa-graduation-cap"></i> Admin CBT v2</h1>
+            <h1 class="text-xl font-bold text-blue-600"><i class="fas fa-graduation-cap"></i> Admin CBT v3</h1>
             <p class="text-xs text-gray-500">SMAN 1 Wongsorejo</p>
         </div>
         <nav class="flex-1 p-4 space-y-2">
@@ -171,9 +170,9 @@
             }, 3000);
         }
 
-        // ==========================================
-        // FUNGSI FETCH DIBUAT SAMA PERSIS DENGAN UJI CONSOLE
-        // ==========================================
+        // ==========================================================
+        // FETCH API DISAMAKAN PERSIS DENGAN KODE CONSOLE YANG BERHASIL
+        // ==========================================================
         async function fetchAPI(action, dataObj = {}) {
             dataObj.action = action;
             dataObj.passwordAdmin = globalPassword;
@@ -181,19 +180,18 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        "Content-Type": "text/plain" // Ini yang berhasil di Console Anda!
+                    headers: { 
+                        "Content-Type": "text/plain" 
                     },
                     body: JSON.stringify(dataObj)
                 });
                 
-                // Gunakan .json() langsung (Sama seperti uji console)
                 const data = await response.json();
                 return data;
 
             } catch (error) {
                 console.error("Error Detail:", error);
-                return { error: "Terblokir! Pastikan Anda tidak memakai AdBlock (pemblokir iklan) atau Ekstensi Keamanan Browser. Coba buka web di Mode Samaran/Incognito." };
+                return { error: "Koneksi terputus. Pastikan Anda membuka link dari GitHub Pages (bukan file lokal)." };
             }
         }
 
@@ -221,6 +219,7 @@
             if(tabName === 'siswa') loadSiswa();
         }
 
+        // --- MANAJEMEN JADWAL ---
         async function loadJadwal() {
             document.getElementById('table-jadwal').innerHTML = `<tr><td colspan="5" class="p-8 text-center"><div class="loader mx-auto"></div></td></tr>`;
             const res = await fetchAPI('getJadwalAdmin');
@@ -268,6 +267,7 @@
             }
         }
 
+        // --- MANAJEMEN SISWA ---
         async function loadSiswa() {
             document.getElementById('table-siswa').innerHTML = `<tr><td colspan="5" class="p-8 text-center"><div class="loader mx-auto"></div></td></tr>`;
             const res = await fetchAPI('getDaftarSiswa');
@@ -304,6 +304,7 @@
             else { showToast(res.message); }
         }
 
+        // --- MANAJEMEN NILAI ---
         async function loadNilai() {
             const kodeUjian = document.getElementById('inputKodeNilai').value.trim();
             if(!kodeUjian) { showToast("Masukkan kode ujian terlebih dahulu", true); return; }
