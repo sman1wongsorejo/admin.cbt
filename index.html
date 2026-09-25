@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - CBT SMANJO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #3b82f6; width: 24px; height: 24px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden-page { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 h-screen flex overflow-hidden">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-full text-center">
+            <div class="mb-6">
+                <i class="fas fa-user-shield text-5xl text-blue-600 mb-2"></i>
+                <h2 class="text-2xl font-bold text-gray-800">CBT SMANJO</h2>
+                <p class="text-gray-500 text-sm">Masuk sebagai Administrator</p>
+            </div>
+            <input type="password" id="adminPassword" placeholder="Masukkan Password Admin" class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-center text-lg">
+            <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200">MASUK</button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white shadow-xl hidden md:flex flex-col">
+        <div class="p-6 border-b text-center">
+            <h1 class="text-xl font-bold text-blue-600"><i class="fas fa-graduation-cap"></i> Admin CBT</h1>
+            <p class="text-xs text-gray-500">SMAN 1 Wongsorejo</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchTab('jadwal')" id="nav-jadwal" class="w-full flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium transition">
+                <i class="fas fa-calendar-alt w-5"></i> <span>Jadwal Ujian</span>
+            </button>
+            <button onclick="switchTab('siswa')" id="nav-siswa" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">
+                <i class="fas fa-users w-5"></i> <span>Data Siswa</span>
+            </button>
+            <button onclick="switchTab('nilai')" id="nav-nilai" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">
+                <i class="fas fa-chart-bar w-5"></i> <span>Rekap Nilai</span>
+            </button>
+        </nav>
+        <div class="p-4 border-t">
+            <button onclick="location.reload()" class="w-full flex items-center justify-center space-x-2 text-red-500 hover:text-red-700 font-medium">
+                <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-8">
+        
+        <!-- JADWAL PAGE -->
+        <section id="page-jadwal" class="page-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Manajemen Jadwal Ujian</h2>
+                <button onclick="loadJadwal()" class="bg-white border shadow-sm px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider border-b">
+                                <th class="p-4">Kode Ujian</th>
+                                <th class="p-4">Mata Pelajaran</th>
+                                <th class="p-4">Waktu</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-jadwal" class="text-sm divide-y">
+                            <tr><td colspan="5" class="p-8 text-center text-gray-500">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SISWA PAGE -->
+        <section id="page-siswa" class="page-content hidden-page">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Data & Token Siswa</h2>
+                <button onclick="loadSiswa()" class="bg-white border shadow-sm px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider border-b">
+                                <th class="p-4">NISN</th>
+                                <th class="p-4">Nama Siswa</th>
+                                <th class="p-4">Kelas</th>
+                                <th class="p-4">Token / Password</th>
+                                <th class="p-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-siswa" class="text-sm divide-y">
+                            <tr><td colspan="5" class="p-8 text-center text-gray-500">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- NILAI PAGE -->
+        <section id="page-nilai" class="page-content hidden-page">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <h2 class="text-2xl font-bold">Rekap Hasil Ujian</h2>
+                <div class="flex w-full md:w-auto space-x-2">
+                    <input type="text" id="inputKodeNilai" placeholder="Masukkan Kode Ujian..." class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64">
+                    <button onclick="loadNilai()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">Cari</button>
+                </div>
+            </div>
+            
+            <div id="nilai-toolbar" class="mb-4 hidden">
+                <button onclick="downloadCSV()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium shadow-sm flex items-center">
+                    <i class="fas fa-file-excel mr-2"></i> Download CSV / Excel
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="tabelRekapFull">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider border-b">
+                                <th class="p-4">Waktu Selesai</th>
+                                <th class="p-4">NISN</th>
+                                <th class="p-4">Nama Siswa</th>
+                                <th class="p-4">Kelas</th>
+                                <th class="p-4">Nilai Akhir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-nilai" class="text-sm divide-y">
+                            <tr><td colspan="5" class="p-8 text-center text-gray-500">Silakan masukkan kode ujian untuk melihat rekap.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition duration-300 z-50">
+        Pesan Notifikasi
+    </div>
+
+    <script>
+        // ==========================================
+        // URL WEB APP GOOGLE SCRIPT CBT SMANJO
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbyGi8A3MIDN-aOLnPfBbupq-Xv74shn4W5_i5NnWPlr6ww5rJbUFefngSuXe7tHxROy/exec"; 
+        
+        let globalPassword = "";
+        let currentRekapData = [];
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 right-5 px-6 py-3 rounded-lg shadow-xl transform transition duration-300 z-50 ${isError ? 'bg-red-600' : 'bg-green-600'} text-white`;
+            toast.style.transform = "translateY(0)";
+            toast.style.opacity = "1";
+            setTimeout(() => {
+                toast.style.transform = "translateY(100px)";
+                toast.style.opacity = "0";
+            }, 3000);
+        }
+
+        // FIX CORS: Header text/plain dan redirect follow ditambahkan
+        async function fetchAPI(action, dataObj = {}) {
+            dataObj.action = action;
+            dataObj.passwordAdmin = globalPassword;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    redirect: 'follow', // Wajib untuk menangani redirect dari Google Script
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8' // Menghindari pre-flight CORS
+                    },
+                    body: JSON.stringify(dataObj)
+                });
+                
+                const textRes = await response.text();
+                try {
+                    return JSON.parse(textRes);
+                } catch (err) {
+                    console.error("Respons Server:", textRes);
+                    return { error: "Terjadi kesalahan respon dari Google. Cek Console (F12)." };
+                }
+            } catch (error) {
+                console.error("Error Detail:", error);
+                return { error: "Koneksi terputus/CORS. Pastikan Anda mengakses dari link GitHub resmi (bukan file lokal)." };
+            }
+        }
+
+        function login() {
+            const pass = document.getElementById('adminPassword').value;
+            if(!pass) return;
+            globalPassword = pass;
+            document.getElementById('loginOverlay').style.display = 'none';
+            loadJadwal();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden-page'));
+            document.getElementById(`page-${tabName}`).classList.remove('hidden-page');
+            
+            document.querySelectorAll('aside nav button').forEach(btn => {
+                btn.classList.remove('bg-blue-50', 'text-blue-700');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-50');
+            activeBtn.classList.add('bg-blue-50', 'text-blue-700');
+
+            if(tabName === 'jadwal') loadJadwal();
+            if(tabName === 'siswa') loadSiswa();
+        }
+
+        // --- MANAJEMEN JADWAL ---
+        async function loadJadwal() {
+            document.getElementById('table-jadwal').innerHTML = `<tr><td colspan="5" class="p-8 text-center"><div class="loader mx-auto"></div></td></tr>`;
+            const res = await fetchAPI('getJadwalAdmin');
+            
+            if(res.error) { showToast(res.error, true); return; }
+            
+            let html = '';
+            res.data.forEach(item => {
+                let badgeColor = item.status === 'AKTIF' ? 'bg-green-100 text-green-800' : (item.status === 'OTOMATIS' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800');
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 font-bold text-gray-700">${item.kodeUjian}</td>
+                        <td class="p-4">${item.mapel}</td>
+                        <td class="p-4 text-xs text-gray-500">${item.mulai}<br/>s/d<br/>${item.selesai}</td>
+                        <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-semibold ${badgeColor}">${item.status}</span></td>
+                        <td class="p-4 text-center">
+                            <select onchange="ubahStatusJadwal('${item.kodeUjian}', this.value)" class="border rounded px-2 py-1 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">- Ubah Status -</option>
+                                <option value="AKTIF">AKTIF (Manual)</option>
+                                <option value="OTOMATIS">OTOMATIS (Sesuai Waktu)</option>
+                                <option value="NONAKTIF">NONAKTIF / SELESAI</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('table-jadwal').innerHTML = html;
+        }
+
+        async function ubahStatusJadwal(kodeUjian, statusBaru) {
+            if(!statusBaru) return;
+            
+            showToast("Sedang mengubah status...", false);
+            
+            const res = await fetchAPI('updateStatusJadwal', { 
+                kodeUjian: kodeUjian, 
+                statusBaru: statusBaru 
+            });
+            
+            if(res.error) { 
+                showToast(res.error, true); 
+            } else { 
+                showToast(res.message); 
+                loadJadwal(); 
+            }
+        }
+
+        // --- MANAJEMEN SISWA ---
+        async function loadSiswa() {
+            document.getElementById('table-siswa').innerHTML = `<tr><td colspan="5" class="p-8 text-center"><div class="loader mx-auto"></div></td></tr>`;
+            const res = await fetchAPI('getDaftarSiswa');
+            
+            if(res.error) { showToast(res.error, true); return; }
+            
+            let html = '';
+            res.forEach(item => {
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 font-medium text-gray-700">${item.nisn}</td>
+                        <td class="p-4">${item.nama}</td>
+                        <td class="p-4">${item.kelas}</td>
+                        <td class="p-4">
+                            <input type="text" id="pass-${item.nisn}" value="${item.password}" class="border rounded px-3 py-1 w-32 focus:outline-none focus:border-blue-500">
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="ubahPassword('${item.nisn}')" class="bg-gray-800 text-white px-3 py-1 text-sm rounded hover:bg-black transition"><i class="fas fa-save"></i> Simpan</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('table-siswa').innerHTML = html;
+        }
+
+        async function ubahPassword(nisn) {
+            const passwordBaru = document.getElementById(`pass-${nisn}`).value;
+            if(!passwordBaru) return;
+            
+            showToast("Menyimpan password baru...", false);
+            const res = await fetchAPI('updatePasswordSiswa', { nisn, passwordBaru });
+            
+            if(res.error) { showToast(res.error, true); }
+            else { showToast(res.message); }
+        }
+
+        // --- MANAJEMEN NILAI ---
+        async function loadNilai() {
+            const kodeUjian = document.getElementById('inputKodeNilai').value.trim();
+            if(!kodeUjian) { showToast("Masukkan kode ujian terlebih dahulu", true); return; }
+
+            document.getElementById('table-nilai').innerHTML = `<tr><td colspan="5" class="p-8 text-center"><div class="loader mx-auto"></div></td></tr>`;
+            document.getElementById('nilai-toolbar').classList.add('hidden');
+            
+            const res = await fetchAPI('getRekapNilai', { kodeUjian });
+            
+            if(res.error) { 
+                document.getElementById('table-nilai').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">${res.error}</td></tr>`;
+                showToast(res.error, true); return; 
+            }
+            
+            currentRekapData = res.data;
+            let html = '';
+            res.data.forEach(item => {
+                let colorClass = item.nilai < 70 ? 'text-red-600 font-bold' : 'text-green-600 font-bold';
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 text-sm text-gray-500">${item.waktu}</td>
+                        <td class="p-4">${item.nisn}</td>
+                        <td class="p-4 font-medium text-gray-800">${item.nama}</td>
+                        <td class="p-4">${item.kelas}</td>
+                        <td class="p-4 ${colorClass} text-lg">${item.nilai}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('table-nilai').innerHTML = html;
+            document.getElementById('nilai-toolbar').classList.remove('hidden');
+        }
+
+        function downloadCSV() {
+            if(!currentRekapData || currentRekapData.length === 0) return;
+            const kode = document.getElementById('inputKodeNilai').value;
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Waktu Selesai,NISN,Nama Siswa,Kelas,Nilai Akhir\n";
+            
+            currentRekapData.forEach(row => {
+                let safeNama = row.nama.replace(/,/g, " "); // Hapus koma pada nama agar tidak merusak CSV
+                csvContent += `${row.waktu},${row.nisn},${safeNama},${row.kelas},${row.nilai}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Nilai_${kode}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
