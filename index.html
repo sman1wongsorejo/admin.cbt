@@ -170,18 +170,16 @@
             }, 3000);
         }
 
-        // FIX CORS: Header text/plain dan redirect follow ditambahkan
+        // FIX: FetchAPI disederhanakan agar tidak diblokir fitur keamanan GitHub Pages
         async function fetchAPI(action, dataObj = {}) {
             dataObj.action = action;
             dataObj.passwordAdmin = globalPassword;
             
             try {
+                // Sengaja menggunakan mode Request biasa tanpa 'headers' agar browser
+                // tidak mengirimkan request OPTIONS (CORS preflight) yang sering diblokir.
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    redirect: 'follow', // Wajib untuk menangani redirect dari Google Script
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8' // Menghindari pre-flight CORS
-                    },
                     body: JSON.stringify(dataObj)
                 });
                 
@@ -190,11 +188,11 @@
                     return JSON.parse(textRes);
                 } catch (err) {
                     console.error("Respons Server:", textRes);
-                    return { error: "Terjadi kesalahan respon dari Google. Cek Console (F12)." };
+                    return { error: "Terjadi kesalahan format respon dari server. Cek Console (F12)." };
                 }
             } catch (error) {
                 console.error("Error Detail:", error);
-                return { error: "Koneksi terputus/CORS. Pastikan Anda mengakses dari link GitHub resmi (bukan file lokal)." };
+                return { error: "Koneksi terputus. Pastikan internet stabil dan Refresh Halaman (Ctrl+Shift+R)." };
             }
         }
 
